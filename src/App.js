@@ -1,43 +1,53 @@
 import React from 'react';
+import axios from 'axios';
+import Movie from './Movie';
+import './App.css';
 
 class App extends React.Component{
-  constructor(props){
-    super(props);
-    console.log('constructor 출력');
-  }
   state = {
-    count: 0,
-  };
-
-  add = () => {
-    this.setState(current => ({count: current.count+1,
-    }));
+    isLoading: true,
+    movies: [],
   };
   
-  minus = () =>{
-    this.setState(current => ({count: this.state.count-1,
-    }));
-  };
+  getMovies = async() => {    //시간이 필요
+    const {
+      data: {
+        data: {movies},
+      },
+    } = await axios.get('http://yts-proxy.now.sh/list_movies.json?sort_by=rating');
+    this.setState({movies, isLoading: false})  //this.setState({movies: movies}); 축약
+  }
 
   componentDidMount(){
-    console.log('component mount 출력');
+    //영화 데이터 로딩
+    this.getMovies();
   }
-  componentDidUpdate(){
-    console.log('component update 출력');
-  } // setState() - render() - componentDidUpdate()
-
-  componentWillUnmount(){
-    console.log('component unmount 출력');
-  }
-
   render(){
-    console.log('render 출력');
+    const {isLoading,movies} = this.state;
     return (
-      <div>
-        <h1>The number is : {this.state.count}</h1>
-        <button onClick={this.add}>Add</button>
-        <button onClick={this.minus}>Minus</button> 
-      </div>
+      <section class="container">
+        {isLoading ? (
+          <div class="loader">
+            <span class="loader__text">Loading...</span>
+          </div>
+        ) : (
+            <div class="movies">
+              {movies.map((movie) => (
+            //console.log(movie);
+            
+              <Movie
+                key={movie.id}
+                id={movie.id}
+                year={movie.year}
+                title={movie.title}
+                summary={movie.summary}
+                poster={movie.medium_cover_image}
+              />
+              ))}
+            </div>
+            
+        )}
+    </section>
     );
   }
 }
